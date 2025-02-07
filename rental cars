@@ -1,0 +1,198 @@
+public class Car {
+    private String carId;
+    private String model;
+    private String make;
+    private int year;
+    private double rentalRate;
+    private boolean isAvailable;
+
+    public Car(String carId, String model, String make, int year, double rentalRate) {
+        this.carId = carId;
+        this.model = model;
+        this.make = make;
+        this.year = year;
+        this.rentalRate = rentalRate;
+        this.isAvailable = true;
+    }
+
+    public String getCarInfo() {
+        return "Car ID: " + carId + ", Model: " + model + ", Make: " + make + ", Year: " + year + ", Rate: " + rentalRate;
+    }
+
+    public void setAvailability(boolean status) {
+        isAvailable = status;
+    }
+
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+}
+Customer.java
+java
+Copy
+import java.util.ArrayList;
+import java.util.List;
+
+public class Customer {
+    private String customerId;
+    private String name;
+    private String email;
+    private String phone;
+    private List<RentalTransaction> rentalHistory;
+
+    public Customer(String customerId, String name, String email, String phone) {
+        this.customerId = customerId;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.rentalHistory = new ArrayList<>();
+    }
+
+    public void addRentalTransaction(RentalTransaction transaction) {
+        rentalHistory.add(transaction);
+    }
+
+    public List<RentalTransaction> getRentalHistory() {
+        return rentalHistory;
+    }
+
+    public String getCustomerInfo() {
+        return "Customer ID: " + customerId + ", Name: " + name + ", Email: " + email + ", Phone: " + phone;
+    }
+}
+RentalAgency.java
+java
+Copy
+import java.util.ArrayList;
+import java.util.List;
+
+public class RentalAgency {
+    private String agencyName;
+    private List<Car> availableCars;
+    private List<Customer> customers;
+
+    public RentalAgency(String agencyName) {
+        this.agencyName = agencyName;
+        this.availableCars = new ArrayList<>();
+        this.customers = new ArrayList<>();
+    }
+
+    public void addCar(Car car) {
+        availableCars.add(car);
+    }
+
+    public void registerCustomer(Customer customer) {
+        customers.add(customer);
+    }
+
+    public void rentCar(String carId, Customer customer, int rentalDays) {
+        for (Car car : availableCars) {
+            if (car.getCarId().equals(carId) && car.isAvailable()) {
+                car.setAvailability(false);
+                double rentalFee = car.getRentalRate() * rentalDays;
+                RentalTransaction transaction = new RentalTransaction(customer, car, rentalDays, rentalFee);
+                customer.addRentalTransaction(transaction);
+                System.out.println("Car rented: " + car.getCarInfo());
+                return;
+            }
+        }
+        System.out.println("Car not available for rental.");
+    }
+
+    public void returnCar(String carId, Customer customer) {
+        for (RentalTransaction transaction : customer.getRentalHistory()) {
+            if (transaction.getCar().getCarId().equals(carId)) {
+                transaction.getCar().setAvailability(true);
+                System.out.println("Car returned: " + carId);
+                return;
+            }
+        }
+        System.out.println("Rental transaction not found for this customer.");
+    }
+}
+RentalTransaction.java
+java
+Copy
+import java.util.Date;
+
+public class RentalTransaction {
+    private static int transactionCount = 0;
+    private String transactionId;
+    private Car car;
+    private Customer customer;
+    private int rentalDays;
+    private double rentalFee;
+    private Date rentalDate;
+
+    public RentalTransaction(Customer customer, Car car, int rentalDays, double rentalFee) {
+        this.transactionId = "TXN" + (++transactionCount);
+        this.car = car;
+        this.customer = customer;
+        this.rentalDays = rentalDays;
+        this.rentalFee = rentalFee;
+        this.rentalDate = new Date();
+    }
+
+    public double calculateRentalFee() {
+        return car.getRentalRate() * rentalDays;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public Car getCar() {
+        return car;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public int getRentalDays() {
+        return rentalDays;
+    }
+
+    public double getRentalFee() {
+        return rentalFee;
+    }
+
+    public Date getRentalDate() {
+        return rentalDate;
+    }
+}
+Test Cases:
+You'll need to create test cases to ensure everything works as expected. Below is an example of how you can test the functionality.
+CarRentalTest.java
+java
+Copy
+public class CarRentalTest {
+    public static void main(String[] args) {
+        // Create agency
+        RentalAgency agency = new RentalAgency("FastCars");
+
+        // Create customers
+        Customer customer1 = new Customer("C001", "John Doe", "john@email.com", "123-456-7890");
+        Customer customer2 = new Customer("C002", "Jane Smith", "jane@email.com", "098-765-4321");
+
+        // Register customers
+        agency.registerCustomer(customer1);
+        agency.registerCustomer(customer2);
+
+        // Create cars
+        Car car1 = new Car("CAR001", "Toyota Corolla", "Toyota", 2020, 50.0);
+        Car car2 = new Car("CAR002", "Honda Civic", "Honda", 2021, 60.0);
+
+        // Add cars to agency
+        agency.addCar(car1);
+        agency.addCar(car2);
+
+        // Rent cars
+        agency.rentCar("CAR001", customer1, 3); // John rents Toyota for 3 days
+        agency.rentCar("CAR002", customer2, 5); // Jane rents Honda for 5 days
+
+        // Return cars
+        agency.returnCar("CAR001", customer1); // John returns Toyota
+    }
+}
+
